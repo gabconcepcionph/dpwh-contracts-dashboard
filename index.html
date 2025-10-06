@@ -128,6 +128,7 @@
                             <th class="px-3 py-2">Contract Cost (₱)</th>
                             <th class="px-3 py-2">Effectivity</th>
                             <th class="px-3 py-2">Expiry</th>
+                            <th class="px-3 py-2">Duration (days)</th>
                             <th class="px-3 py-2">Status</th>
                         </tr>
                     </thead>
@@ -147,6 +148,7 @@
             <td class="px-3 py-2 text-slate-200"></td>
             <td class="px-3 py-2 text-slate-200"></td>
             <td class="px-3 py-2 text-slate-300"></td>
+            <td class="px-3 py-2 text-slate-200"></td>
             <td class="px-3 py-2 text-slate-200"></td>
             <td class="px-3 py-2 text-slate-200"></td>
             <td class="px-3 py-2 text-slate-200"></td>
@@ -418,7 +420,9 @@
                     cells[4].textContent = contract.contract_cost_php || '—';
                     cells[5].textContent = contract.contract_effectivity_date || '—';
                     cells[6].textContent = contract.contract_expiry_date || '—';
-                    cells[7].textContent = contract.status || '—';
+                    const durationInDays = getContractDurationInDays(contract);
+                    cells[7].textContent = durationInDays === null ? '—' : durationInDays.toLocaleString();
+                    cells[8].textContent = contract.status || '—';
                     $tbody.append(clone);
                 });
             }
