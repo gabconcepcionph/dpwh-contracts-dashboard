@@ -357,7 +357,10 @@
             }
 
             function parseNumber(value) {
-                const parsed = Number(value);
+                if (value === null || value === undefined) return NaN;
+                const text = String(value).trim();
+                if (text === '') return NaN;
+                const parsed = Number(text);
                 return Number.isFinite(parsed) ? parsed : NaN;
             }
 
