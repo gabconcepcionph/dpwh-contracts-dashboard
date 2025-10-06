@@ -41,37 +41,14 @@
 
         <section class="bg-slate-900 border border-slate-800 rounded-lg p-6 mb-8 shadow-lg shadow-black/20">
             <h2 class="text-xl font-semibold mb-4">Filters</h2>
-            <div class="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
+            <div class="grid gap-6 md:grid-cols-3 lg:grid-cols-3">
                 <div class="flex flex-col gap-2">
                     <label for="filter-contract-id" class="text-sm text-slate-300">Contract ID</label>
                     <input id="filter-contract-id" type="text" placeholder="e.g., 25F00002" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
                 </div>
-                <div class="flex flex-col gap-2 md:col-span-2 lg:col-span-1">
-                    <label for="filter-description" class="text-sm text-slate-300">Description</label>
-                    <input id="filter-description" type="text" placeholder="Search description" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
-                </div>
                 <div class="flex flex-col gap-2">
                     <label for="filter-contractor" class="text-sm text-slate-300">Contractor</label>
                     <input id="filter-contractor" type="text" placeholder="Contractor name" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
-                </div>
-                <div class="flex flex-col gap-2">
-                    <label for="filter-office" class="text-sm text-slate-300">Implementing Office</label>
-                    <input id="filter-office" type="text" placeholder="Implementing office" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
-                </div>
-                <div class="flex flex-col gap-2">
-                    <label class="text-sm text-slate-300">Contract Cost (₱)</label>
-                    <div class="flex gap-2">
-                        <input id="filter-cost-min" type="number" min="0" placeholder="Min" class="w-1/2 bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
-                        <input id="filter-cost-max" type="number" min="0" placeholder="Max" class="w-1/2 bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
-                    </div>
-                </div>
-                <div class="flex flex-col gap-2">
-                    <label for="filter-effectivity-month" class="text-sm text-slate-300">Effectivity Month</label>
-                    <select id="filter-effectivity-month" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm"></select>
-                </div>
-                <div class="flex flex-col gap-2">
-                    <label for="filter-expiry-month" class="text-sm text-slate-300">Expiry Month</label>
-                    <select id="filter-expiry-month" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm"></select>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label for="filter-status" class="text-sm text-slate-300">Status</label>
@@ -213,11 +190,10 @@
                     }
                 });
 
-                $('#filter-contract-id, #filter-description, #filter-contractor, #filter-office')
+                $('#filter-contract-id, #filter-contractor')
                     .on('input', debounce(applyFilters, 200));
 
-                $('#filter-cost-min, #filter-cost-max, #filter-effectivity-month, #filter-expiry-month, #filter-status')
-                    .on('input change', applyFilters);
+                $('#filter-status').on('change', applyFilters);
             }
 
             function loadDataset(source, forceReload = false) {
@@ -276,38 +252,17 @@
 
             function applyFilters() {
                 const contractIdQuery = $('#filter-contract-id').val().trim().toLowerCase();
-                const descriptionQuery = $('#filter-description').val().trim().toLowerCase();
                 const contractorQuery = $('#filter-contractor').val().trim().toLowerCase();
-                const officeQuery = $('#filter-office').val().trim().toLowerCase();
                 const statusValue = $('#filter-status').val();
-
-                const minCost = parseNumber($('#filter-cost-min').val());
-                const maxCost = parseNumber($('#filter-cost-max').val());
-                const effectivityMonth = $('#filter-effectivity-month').val();
-                const expiryMonth = $('#filter-expiry-month').val();
 
                 const filtered = allContracts.filter(contract => {
                     const id = String(contract.contract_id || '').toLowerCase();
-                    const description = String(contract.contract_description || '').toLowerCase();
                     const contractor = String(contract.contractor || '').toLowerCase();
-                    const office = String(contract.implementing_office || '').toLowerCase();
                     const status = String(contract.status || '').trim();
 
                     if (contractIdQuery && !id.includes(contractIdQuery)) return false;
-                    if (descriptionQuery && !description.includes(descriptionQuery)) return false;
                     if (contractorQuery && !contractor.includes(contractorQuery)) return false;
-                    if (officeQuery && !office.includes(officeQuery)) return false;
                     if (statusValue && status !== statusValue) return false;
-
-                    const amount = parseAmount(contract.contract_cost_php);
-                    if (!Number.isNaN(minCost) && amount < minCost) return false;
-                    if (!Number.isNaN(maxCost) && amount > maxCost) return false;
-
-                    const effectivity = parseMonth(contract.contract_effectivity_date);
-                    if (effectivityMonth !== '' && effectivity !== Number(effectivityMonth)) return false;
-
-                    const expiry = parseMonth(contract.contract_expiry_date);
-                    if (expiryMonth !== '' && expiry !== Number(expiryMonth)) return false;
 
                     return true;
                 });
@@ -356,20 +311,6 @@
                 const normalized = String(value).replace(/,/g, '').trim();
                 const parsed = Number(normalized);
                 return Number.isFinite(parsed) ? parsed : 0;
-            }
-
-            function parseNumber(value) {
-                if (value === null || value === undefined) return NaN;
-                const text = String(value).trim();
-                if (text === '') return NaN;
-                const parsed = Number(text);
-                return Number.isFinite(parsed) ? parsed : NaN;
-            }
-
-            function parseMonth(value) {
-                if (!value) return null;
-                const parsedDate = new Date(value);
-                return Number.isNaN(parsedDate.getTime()) ? null : parsedDate.getMonth();
             }
 
             function formatCurrency(amount) {
