@@ -43,10 +43,6 @@
             <h2 class="text-xl font-semibold mb-4">Filters</h2>
             <div class="grid gap-6 md:grid-cols-3 lg:grid-cols-3">
                 <div class="flex flex-col gap-2">
-                    <label for="filter-contract-id" class="text-sm text-slate-300">Contract ID</label>
-                    <input id="filter-contract-id" type="text" placeholder="e.g., 25F00002" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
-                </div>
-                <div class="flex flex-col gap-2">
                     <label for="filter-contractor" class="text-sm text-slate-300">Contractor</label>
                     <input id="filter-contractor" type="text" placeholder="Contractor name" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
                 </div>
@@ -54,6 +50,24 @@
                     <label for="filter-status" class="text-sm text-slate-300">Status</label>
                     <select id="filter-status" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
                         <option value="">All Statuses</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label for="filter-effectivity-month" class="text-sm text-slate-300">Effectivity Month</label>
+                    <select id="filter-effectivity-month" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
+                        <option value="">All Effectivity Months</option>
+                        <option value="0">January</option>
+                        <option value="1">February</option>
+                        <option value="2">March</option>
+                        <option value="3">April</option>
+                        <option value="4">May</option>
+                        <option value="5">June</option>
+                        <option value="6">July</option>
+                        <option value="7">August</option>
+                        <option value="8">September</option>
+                        <option value="9">October</option>
+                        <option value="10">November</option>
+                        <option value="11">December</option>
                     </select>
                 </div>
             </div>
@@ -190,10 +204,10 @@
                     }
                 });
 
-                $('#filter-contract-id, #filter-contractor')
+                $('#filter-contractor')
                     .on('input', debounce(applyFilters, 200));
 
-                $('#filter-status').on('change', applyFilters);
+                $('#filter-status, #filter-effectivity-month').on('change', applyFilters);
             }
 
             function loadDataset(source, forceReload = false) {
@@ -251,18 +265,20 @@
             }
 
             function applyFilters() {
-                const contractIdQuery = $('#filter-contract-id').val().trim().toLowerCase();
                 const contractorQuery = $('#filter-contractor').val().trim().toLowerCase();
                 const statusValue = $('#filter-status').val();
+                const effectivityMonthValue = $('#filter-effectivity-month').val();
+                const monthFilter = effectivityMonthValue === '' ? null : Number(effectivityMonthValue);
 
                 const filtered = allContracts.filter(contract => {
-                    const id = String(contract.contract_id || '').toLowerCase();
                     const contractor = String(contract.contractor || '').toLowerCase();
                     const status = String(contract.status || '').trim();
+                    const effectivity = parseMonth(contract.contract_effectivity_date);
+                    const expiry = parseMonth(contract.contract_expiry_date);
 
-                    if (contractIdQuery && !id.includes(contractIdQuery)) return false;
                     if (contractorQuery && !contractor.includes(contractorQuery)) return false;
                     if (statusValue && status !== statusValue) return false;
+                    if (monthFilter !== null && effectivity !== monthFilter && expiry !== monthFilter) return false;
 
                     return true;
                 });
@@ -302,8 +318,8 @@
                 const totalCost = contracts.reduce((sum, contract) => sum + parseAmount(contract.contract_cost_php), 0);
                 $('#summary-projects').text(totalProjects.toLocaleString());
                 const shortAmount = formatShortAmount(totalCost);
-                const shortSuffix = shortAmount ? ` (${shortAmount})` : '';
-                $('#summary-amount').text(`₱${formatCurrency(totalCost)}${shortSuffix}`);
+                const shortSuffix = shortAmount ? `${shortAmount}` : '';
+                $('#summary-amount').text(`${shortSuffix}`);
             }
 
             function parseAmount(value) {
@@ -311,6 +327,13 @@
                 const normalized = String(value).replace(/,/g, '').trim();
                 const parsed = Number(normalized);
                 return Number.isFinite(parsed) ? parsed : 0;
+            }
+
+            function parseMonth(value) {
+                if (!value) return null;
+                const parsedDate = new Date(value);
+                const month = parsedDate.getMonth();
+                return Number.isNaN(month) ? null : month;
             }
 
             function formatCurrency(amount) {
