@@ -88,16 +88,12 @@
             </div>
         </section>
 
-        <section class="grid gap-4 md:grid-cols-5 mb-8" id="extended-summary-cards">
+        <section class="grid gap-4 md:grid-cols-3 mb-8" id="extended-summary-cards">
             <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
                 <p class="text-sm text-slate-400">Ongoing Projects</p>
                 <p id="summary-ongoing" class="text-2xl font-semibold mt-1">0</p>
-            </div>
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
                 <p class="text-sm text-slate-400">Completed Projects</p>
                 <p id="summary-completed" class="text-2xl font-semibold mt-1">0</p>
-            </div>
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
                 <p class="text-sm text-slate-400">Average Contract Cost</p>
                 <p id="summary-avg-cost" class="text-2xl font-semibold mt-1">₱0.00</p>
             </div>
@@ -190,6 +186,7 @@
             let allContracts = [];
             let activeSource = null;
             let activeContractIdFilter = null;
+            let activeContractorFilter = null;
 
             const CACHE_PREFIX = 'dpwh-dataset:';
             const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
@@ -217,6 +214,8 @@
             }
 
             function bindEvents() {
+                const debouncedApplyFilters = debounce(applyFilters, 200);
+
                 $('#dataset-select').on('change', function () {
                     const selected = dataSources.find(ds => ds.file === this.value);
                     if (selected) {
@@ -230,8 +229,10 @@
                     }
                 });
 
-                $('#filter-contractor')
-                    .on('input', debounce(applyFilters, 200));
+                $('#filter-contractor').on('input', function () {
+                    activeContractorFilter = null;
+                    debouncedApplyFilters();
+                });
 
                 $('#filter-status, #filter-effectivity-month').on('change', applyFilters);
 
@@ -245,12 +246,28 @@
                     }
                     applyFilters();
                 });
+
+                $('#summary-contractors').on('click', 'button[data-contractor-name]', function () {
+                    const contractorName = $(this).data('contractorName');
+                    if (!contractorName) return;
+
+                    if (activeContractorFilter && contractorName === activeContractorFilter) {
+                        activeContractorFilter = null;
+                        $('#filter-contractor').val('');
+                    } else {
+                        activeContractorFilter = contractorName;
+                        $('#filter-contractor').val(contractorName);
+                    }
+
+                    applyFilters();
+                });
             }
 
             function loadDataset(source, forceReload = false) {
                 if (!source) return;
                 activeSource = source;
                 activeContractIdFilter = null;
+                activeContractorFilter = null;
                 $('#summary-dataset').text(source.label);
                 $('#results-count').text('Loading…');
                 $('#contracts-body').html(
@@ -375,6 +392,9 @@
                 if (activeContractIdFilter) {
                     resultsLabel += ` (Contract ID: ${activeContractIdFilter})`;
                 }
+                if (activeContractorFilter) {
+                    resultsLabel += ` (Contractor: ${activeContractorFilter})`;
+                }
                 $('#results-count').text(resultsLabel);
             }
 
@@ -482,7 +502,24 @@
                     $contractorList.append('<li class="text-slate-500">No data</li>');
                 } else {
                     sortedContractors.forEach(([name, count]) => {
-                        $contractorList.append(`<li>${name} <span class="text-slate-500">(${count.toLocaleString()})</span></li>`);
+                        const $button = $('<button>', {
+                            type: 'button',
+                            class: 'w-full text-left px-2 py-1 rounded-md transition hover:bg-brand/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60',
+                            'data-contractor-name': name
+                        });
+
+                        $button.append(
+                            $('<span>').text(name),
+                            ' ',
+                            $('<span>', { class: 'text-slate-500' }).text(`(${count.toLocaleString()})`)
+                        );
+
+                        if (activeContractorFilter && name === activeContractorFilter) {
+                            $button.addClass('bg-brand/30 text-brand');
+                        }
+
+                        const $listItem = $('<li>').append($button);
+                        $contractorList.append($listItem);
                     });
                 }
             }
