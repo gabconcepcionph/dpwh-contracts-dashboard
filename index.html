@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DPWH Contract Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-7ZmPqxH3xJ9zPSZ2DzQyyzSZwH0JN1yELTir4q4v5vY=" crossorigin="anonymous"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#38bdf8'
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <header class="mb-8">
+            <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-brand">DPWH Contract Dashboard</h1>
+                    <p class="text-slate-400">Navigate and filter regional contract summaries generated from local JSON files.</p>
+                </div>
+                <div class="flex flex-wrap gap-3 items-center">
+                    <label class="text-sm text-slate-300" for="dataset-select">Dataset</label>
+                    <select id="dataset-select" class="bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm">
+                    </select>
+                    <button id="reload-button" class="px-3 py-2 text-sm font-medium rounded-md bg-brand/20 text-brand border border-brand/40 transition hover:bg-brand/30">
+                        Reload Data
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <section class="bg-slate-900 border border-slate-800 rounded-lg p-6 mb-8 shadow-lg shadow-black/20">
+            <h2 class="text-xl font-semibold mb-4">Filters</h2>
+            <div class="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
+                <div class="flex flex-col gap-2">
+                    <label for="filter-contract-id" class="text-sm text-slate-300">Contract ID</label>
+                    <input id="filter-contract-id" type="text" placeholder="e.g., 25F00002" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
+                </div>
+                <div class="flex flex-col gap-2 md:col-span-2 lg:col-span-1">
+                    <label for="filter-description" class="text-sm text-slate-300">Description</label>
+                    <input id="filter-description" type="text" placeholder="Search description" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label for="filter-contractor" class="text-sm text-slate-300">Contractor</label>
+                    <input id="filter-contractor" type="text" placeholder="Contractor name" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label for="filter-office" class="text-sm text-slate-300">Implementing Office</label>
+                    <input id="filter-office" type="text" placeholder="Implementing office" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm text-slate-300">Contract Cost (₱)</label>
+                    <div class="flex gap-2">
+                        <input id="filter-cost-min" type="number" min="0" placeholder="Min" class="w-1/2 bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
+                        <input id="filter-cost-max" type="number" min="0" placeholder="Max" class="w-1/2 bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label for="filter-effectivity-month" class="text-sm text-slate-300">Effectivity Month</label>
+                    <select id="filter-effectivity-month" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm"></select>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label for="filter-expiry-month" class="text-sm text-slate-300">Expiry Month</label>
+                    <select id="filter-expiry-month" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm"></select>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label for="filter-status" class="text-sm text-slate-300">Status</label>
+                    <select id="filter-status" class="bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-sm">
+                        <option value="">All Statuses</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid gap-4 md:grid-cols-3 mb-8" id="summary-cards">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                <p class="text-sm text-slate-400">Active Dataset</p>
+                <p id="summary-dataset" class="text-2xl font-semibold mt-1 text-brand">—</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                <p class="text-sm text-slate-400">Projects</p>
+                <p id="summary-projects" class="text-2xl font-semibold mt-1">0</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                <p class="text-sm text-slate-400">Total Contract Cost</p>
+                <p id="summary-amount" class="text-2xl font-semibold mt-1">₱0.00</p>
+            </div>
+        </section>
+
+        <section class="bg-slate-900 border border-slate-800 rounded-lg p-6 shadow-lg shadow-black/20">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold">Contracts</h2>
+                <span id="results-count" class="text-sm text-slate-400">0 results</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-800 text-slate-200">
+                        <tr class="text-left">
+                            <th class="px-3 py-2">Contract ID</th>
+                            <th class="px-3 py-2">Description</th>
+                            <th class="px-3 py-2">Contractor</th>
+                            <th class="px-3 py-2">Implementing Office</th>
+                            <th class="px-3 py-2">Contract Cost (₱)</th>
+                            <th class="px-3 py-2">Effectivity</th>
+                            <th class="px-3 py-2">Expiry</th>
+                            <th class="px-3 py-2">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contracts-body" class="divide-y divide-slate-800">
+                        <tr>
+                            <td colspan="8" class="px-3 py-6 text-center text-slate-400">Load a dataset to view records.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <template id="table-row-template">
+        <tr class="hover:bg-slate-800/50 transition">
+            <td class="px-3 py-2 font-semibold text-brand"></td>
+            <td class="px-3 py-2 text-slate-200"></td>
+            <td class="px-3 py-2 text-slate-200"></td>
+            <td class="px-3 py-2 text-slate-300"></td>
+            <td class="px-3 py-2 text-slate-200"></td>
+            <td class="px-3 py-2 text-slate-200"></td>
+            <td class="px-3 py-2 text-slate-200"></td>
+            <td class="px-3 py-2 text-slate-200"></td>
+        </tr>
+    </template>
+
+    <script>
+        $(function () {
+            const monthNames = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+
+            const dataSources = [
+                { label: 'Cordillera Administrative Region (CAR)', file: 'car-2025_737.json' },
+                { label: 'Region I', file: 'region1-2025_1802.json' },
+                { label: 'Region II', file: 'region2-2025_1281.json' },
+                { label: 'Region III', file: 'region3-2025_2467.json' },
+                { label: 'Region IV-A', file: 'region4a-2025_2091.json' },
+                { label: 'Region IV-B', file: 'region4b-2025_958.json' },
+                { label: 'Region V', file: 'region5-2025_964.json' },
+                { label: 'Region VI', file: 'region6-2025_873.json' },
+                { label: 'Region VII', file: 'region7-2025_1304.json' },
+                { label: 'Region VIII', file: 'region8-2025_1126.json' },
+                { label: 'Region IX', file: 'region9-2025_603.json' },
+                { label: 'Region X', file: 'region10-2025_1195.json' },
+                { label: 'Region XI', file: 'region11-2025_703.json' },
+                { label: 'Region XII', file: 'region12-2025_698.json' },
+                { label: 'Region XIII', file: 'region13-2025_782.json' },
+                { label: 'Negros Island Region', file: 'negros-2025_913.json' },
+                { label: 'National Capital Region', file: 'ncr-2025_1742.json' },
+                { label: 'NCR (Alt Copy)', file: 'ncr_1742.json' }
+            ];
+
+            let allContracts = [];
+            let activeSource = null;
+
+            initDatasets();
+            initMonthSelectors();
+            bindEvents();
+            loadDataset(dataSources[0]);
+
+            function initDatasets() {
+                const $select = $('#dataset-select');
+                dataSources.forEach((source, index) => {
+                    const option = $('<option>')
+                        .val(source.file)
+                        .text(source.label);
+                    if (index === 0) {
+                        option.prop('selected', true);
+                    }
+                    $select.append(option);
+                });
+            }
+
+            function initMonthSelectors() {
+                const $effectivity = $('#filter-effectivity-month');
+                const $expiry = $('#filter-expiry-month');
+                [$effectivity, $expiry].forEach($select => {
+                    $select.append('<option value="">All Months</option>');
+                    monthNames.forEach((name, idx) => {
+                        $select.append(`<option value="${idx}">${name}</option>`);
+                    });
+                });
+            }
+
+            function bindEvents() {
+                $('#dataset-select').on('change', function () {
+                    const selected = dataSources.find(ds => ds.file === this.value);
+                    if (selected) {
+                        loadDataset(selected);
+                    }
+                });
+
+                $('#reload-button').on('click', function () {
+                    if (activeSource) {
+                        loadDataset(activeSource, true);
+                    }
+                });
+
+                $('#filter-contract-id, #filter-description, #filter-contractor, #filter-office')
+                    .on('input', debounce(applyFilters, 200));
+
+                $('#filter-cost-min, #filter-cost-max, #filter-effectivity-month, #filter-expiry-month, #filter-status')
+                    .on('input change', applyFilters);
+            }
+
+            function loadDataset(source, forceReload = false) {
+                if (!source) return;
+                activeSource = source;
+                $('#summary-dataset').text(source.label);
+                $('#results-count').text('Loading…');
+                $('#contracts-body').html(
+                    '<tr><td colspan="8" class="px-3 py-6 text-center text-slate-400">Loading data…</td></tr>'
+                );
+
+                fetch(source.file + (forceReload ? `?t=${Date.now()}` : ''))
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Failed to load ${source.file}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (!Array.isArray(data)) {
+                            throw new Error('Invalid JSON format: expected an array of contracts.');
+                        }
+                        allContracts = data;
+                        populateStatusOptions();
+                        applyFilters();
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        $('#contracts-body').html(
+                            `<tr><td colspan="8" class="px-3 py-6 text-center text-red-400">${error.message}</td></tr>`
+                        );
+                        $('#results-count').text('0 results');
+                        updateSummary([]);
+                    });
+            }
+
+            function populateStatusOptions() {
+                const statuses = new Set();
+                allContracts.forEach(contract => {
+                    if (contract.status) {
+                        statuses.add(String(contract.status).trim());
+                    }
+                });
+                const sorted = Array.from(statuses).sort((a, b) => a.localeCompare(b));
+                const $status = $('#filter-status');
+                const current = $status.val();
+                $status.empty().append('<option value="">All Statuses</option>');
+                sorted.forEach(status => {
+                    const option = $('<option>').val(status).text(status);
+                    if (status === current) {
+                        option.prop('selected', true);
+                    }
+                    $status.append(option);
+                });
+            }
+
+            function applyFilters() {
+                const contractIdQuery = $('#filter-contract-id').val().trim().toLowerCase();
+                const descriptionQuery = $('#filter-description').val().trim().toLowerCase();
+                const contractorQuery = $('#filter-contractor').val().trim().toLowerCase();
+                const officeQuery = $('#filter-office').val().trim().toLowerCase();
+                const statusValue = $('#filter-status').val();
+
+                const minCost = parseNumber($('#filter-cost-min').val());
+                const maxCost = parseNumber($('#filter-cost-max').val());
+                const effectivityMonth = $('#filter-effectivity-month').val();
+                const expiryMonth = $('#filter-expiry-month').val();
+
+                const filtered = allContracts.filter(contract => {
+                    const id = String(contract.contract_id || '').toLowerCase();
+                    const description = String(contract.contract_description || '').toLowerCase();
+                    const contractor = String(contract.contractor || '').toLowerCase();
+                    const office = String(contract.implementing_office || '').toLowerCase();
+                    const status = String(contract.status || '').trim();
+
+                    if (contractIdQuery && !id.includes(contractIdQuery)) return false;
+                    if (descriptionQuery && !description.includes(descriptionQuery)) return false;
+                    if (contractorQuery && !contractor.includes(contractorQuery)) return false;
+                    if (officeQuery && !office.includes(officeQuery)) return false;
+                    if (statusValue && status !== statusValue) return false;
+
+                    const amount = parseAmount(contract.contract_cost_php);
+                    if (!Number.isNaN(minCost) && amount < minCost) return false;
+                    if (!Number.isNaN(maxCost) && amount > maxCost) return false;
+
+                    const effectivity = parseMonth(contract.contract_effectivity_date);
+                    if (effectivityMonth !== '' && effectivity !== Number(effectivityMonth)) return false;
+
+                    const expiry = parseMonth(contract.contract_expiry_date);
+                    if (expiryMonth !== '' && expiry !== Number(expiryMonth)) return false;
+
+                    return true;
+                });
+
+                renderTable(filtered);
+                updateSummary(filtered);
+                $('#results-count').text(`${filtered.length} result${filtered.length === 1 ? '' : 's'}`);
+            }
+
+            function renderTable(contracts) {
+                const $tbody = $('#contracts-body');
+                $tbody.empty();
+
+                if (!contracts.length) {
+                    $tbody.append('<tr><td colspan="8" class="px-3 py-6 text-center text-slate-400">No contracts match the current filters.</td></tr>');
+                    return;
+                }
+
+                const rowTemplate = document.getElementById('table-row-template');
+                contracts.forEach(contract => {
+                    const clone = rowTemplate.content.cloneNode(true);
+                    const cells = clone.querySelectorAll('td');
+                    cells[0].textContent = contract.contract_id || '—';
+                    cells[1].textContent = contract.contract_description || '—';
+                    cells[2].textContent = contract.contractor || '—';
+                    cells[3].textContent = contract.implementing_office || '—';
+                    cells[4].textContent = contract.contract_cost_php || '—';
+                    cells[5].textContent = contract.contract_effectivity_date || '—';
+                    cells[6].textContent = contract.contract_expiry_date || '—';
+                    cells[7].textContent = contract.status || '—';
+                    $tbody.append(clone);
+                });
+            }
+
+            function updateSummary(contracts) {
+                const totalProjects = contracts.length;
+                const totalCost = contracts.reduce((sum, contract) => sum + parseAmount(contract.contract_cost_php), 0);
+                $('#summary-projects').text(totalProjects.toLocaleString());
+                $('#summary-amount').text(`₱${formatCurrency(totalCost)}`);
+            }
+
+            function parseAmount(value) {
+                if (value === null || value === undefined) return 0;
+                const normalized = String(value).replace(/,/g, '').trim();
+                const parsed = Number(normalized);
+                return Number.isFinite(parsed) ? parsed : 0;
+            }
+
+            function parseNumber(value) {
+                const parsed = Number(value);
+                return Number.isFinite(parsed) ? parsed : NaN;
+            }
+
+            function parseMonth(value) {
+                if (!value) return null;
+                const parsedDate = new Date(value);
+                return Number.isNaN(parsedDate.getTime()) ? null : parsedDate.getMonth();
+            }
+
+            function formatCurrency(amount) {
+                return amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+
+            function debounce(fn, delay) {
+                let timer = null;
+                return function (...args) {
+                    clearTimeout(timer);
+                    timer = setTimeout(() => fn.apply(this, args), delay);
+                };
+            }
+        });
+    </script>
+</body>
+
+</html>
