@@ -189,6 +189,7 @@
 
             let allContracts = [];
             let activeSource = null;
+            let activeContractIdFilter = null;
 
             const CACHE_PREFIX = 'dpwh-dataset:';
             const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
@@ -233,11 +234,23 @@
                     .on('input', debounce(applyFilters, 200));
 
                 $('#filter-status, #filter-effectivity-month').on('change', applyFilters);
+
+                $('#summary-shortest-term-list').on('click', 'button[data-contract-id]', function () {
+                    const contractId = $(this).data('contractId');
+                    if (!contractId) return;
+                    if (activeContractIdFilter && contractId.toLowerCase() === activeContractIdFilter.toLowerCase()) {
+                        activeContractIdFilter = null;
+                    } else {
+                        activeContractIdFilter = contractId;
+                    }
+                    applyFilters();
+                });
             }
 
             function loadDataset(source, forceReload = false) {
                 if (!source) return;
                 activeSource = source;
+                activeContractIdFilter = null;
                 $('#summary-dataset').text(source.label);
                 $('#results-count').text('Loading…');
                 $('#contracts-body').html(
@@ -339,12 +352,16 @@
                 const effectivityMonthValue = $('#filter-effectivity-month').val();
                 const monthFilter = effectivityMonthValue === '' ? null : Number(effectivityMonthValue);
 
+                const contractIdFilter = activeContractIdFilter ? activeContractIdFilter.toLowerCase() : null;
+
                 const filtered = allContracts.filter(contract => {
+                    const contractIdValue = String(contract.contract_id || '').trim();
                     const contractor = String(contract.contractor || '').toLowerCase();
                     const status = String(contract.status || '').trim();
                     const effectivity = parseMonth(contract.contract_effectivity_date);
                     const expiry = parseMonth(contract.contract_expiry_date);
 
+                    if (contractIdFilter && contractIdValue.toLowerCase() !== contractIdFilter) return false;
                     if (contractorQuery && !contractor.includes(contractorQuery)) return false;
                     if (statusValue && status !== statusValue) return false;
                     if (monthFilter !== null && effectivity !== monthFilter && expiry !== monthFilter) return false;
@@ -354,7 +371,11 @@
 
                 renderTable(filtered);
                 updateSummary(filtered);
-                $('#results-count').text(`${filtered.length} result${filtered.length === 1 ? '' : 's'}`);
+                let resultsLabel = `${filtered.length} result${filtered.length === 1 ? '' : 's'}`;
+                if (activeContractIdFilter) {
+                    resultsLabel += ` (Contract ID: ${activeContractIdFilter})`;
+                }
+                $('#results-count').text(resultsLabel);
             }
 
             function renderTable(contracts) {
@@ -417,10 +438,29 @@
                 if (shortestTermResults.length === 0) {
                     $shortestList.append('<li class="text-slate-500">No contract data</li>');
                 } else {
-                    shortestTermResults.forEach(({ duration, contract }, index) => {
-                        const contractId = contract.contract_id || '—';
-                        const itemText = `${contractId} (${duration.toLocaleString()} day${duration === 1 ? '' : 's'})`;
-                        $shortestList.append(`<li>${itemText}</li>`);
+                    shortestTermResults.forEach(({ duration, contract }) => {
+                        const rawContractId = contract.contract_id;
+                        const contractId = rawContractId ? String(rawContractId).trim() : '';
+                        const displayId = contractId || '—';
+                        const itemText = `${displayId} (${duration.toLocaleString()} day${duration === 1 ? '' : 's'})`;
+
+                        if (!contractId) {
+                            $shortestList.append(`<li>${itemText}</li>`);
+                            return;
+                        }
+
+                        const $button = $('<button>', {
+                            type: 'button',
+                            class: 'w-full text-left px-2 py-1 rounded-md transition hover:bg-brand/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60',
+                            'data-contract-id': contractId
+                        }).text(itemText);
+
+                        if (activeContractIdFilter && contractId.toLowerCase() === activeContractIdFilter.toLowerCase()) {
+                            $button.addClass('bg-brand/30 text-brand');
+                        }
+
+                        const $listItem = $('<li>').append($button);
+                        $shortestList.append($listItem);
                     });
                 }
 
