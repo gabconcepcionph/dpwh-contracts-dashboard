@@ -88,6 +88,31 @@
             </div>
         </section>
 
+        <section class="grid gap-4 md:grid-cols-5 mb-8" id="extended-summary-cards">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                <p class="text-sm text-slate-400">Ongoing Projects</p>
+                <p id="summary-ongoing" class="text-2xl font-semibold mt-1">0</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                <p class="text-sm text-slate-400">Completed Projects</p>
+                <p id="summary-completed" class="text-2xl font-semibold mt-1">0</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                <p class="text-sm text-slate-400">Average Contract Cost</p>
+                <p id="summary-avg-cost" class="text-2xl font-semibold mt-1">₱0.00</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                <p class="text-sm text-slate-400">Shortest Effectivity → Expiry</p>
+                <p id="summary-shortest-term" class="text-2xl font-semibold mt-1">—</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                <p class="text-sm text-slate-400">Contractor Ranking (by projects)</p>
+                <ol id="summary-contractors" class="mt-2 space-y-1 text-sm text-slate-300">
+                    <li class="text-slate-500">No data</li>
+                </ol>
+            </div>
+        </section>
+
         <section class="bg-slate-900 border border-slate-800 rounded-lg p-6 shadow-lg shadow-black/20">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-semibold">Contracts</h2>
@@ -361,6 +386,45 @@
                 const shortAmount = formatShortAmount(totalCost);
                 const shortSuffix = shortAmount ? `${shortAmount}` : '';
                 $('#summary-amount').text(`${shortSuffix}`);
+
+                const ongoingCount = contracts.reduce((count, contract) => count + (normalizeStatus(contract.status) === 'ongoing' ? 1 : 0), 0);
+                const completedCount = contracts.reduce((count, contract) => count + (normalizeStatus(contract.status) === 'completed' ? 1 : 0), 0);
+                $('#summary-ongoing').text(ongoingCount.toLocaleString());
+                $('#summary-completed').text(completedCount.toLocaleString());
+
+                const averageCost = totalProjects ? totalCost / totalProjects : 0;
+                $('#summary-avg-cost').text(`₱${formatCurrency(averageCost)}`);
+
+                const shortestTerm = contracts.reduce((min, contract) => {
+                    const duration = getContractDurationInDays(contract);
+                    if (duration === null) return min;
+                    if (min === null || duration < min) return duration;
+                    return min;
+                }, null);
+                const shortestTermText = shortestTerm === null ? '—' : `${shortestTerm.toLocaleString()} day${shortestTerm === 1 ? '' : 's'}`;
+                $('#summary-shortest-term').text(shortestTermText);
+
+                const contractorCounts = new Map();
+                contracts.forEach(contract => {
+                    const name = String(contract.contractor || '').trim();
+                    if (!name) return;
+                    contractorCounts.set(name, (contractorCounts.get(name) || 0) + 1);
+                });
+                const sortedContractors = Array.from(contractorCounts.entries())
+                    .sort((a, b) => {
+                        if (b[1] !== a[1]) return b[1] - a[1];
+                        return a[0].localeCompare(b[0]);
+                    })
+                    .slice(0, 5);
+                const $contractorList = $('#summary-contractors');
+                $contractorList.empty();
+                if (sortedContractors.length === 0) {
+                    $contractorList.append('<li class="text-slate-500">No data</li>');
+                } else {
+                    sortedContractors.forEach(([name, count]) => {
+                        $contractorList.append(`<li>${name} <span class="text-slate-500">(${count.toLocaleString()})</span></li>`);
+                    });
+                }
             }
 
             function parseAmount(value) {
@@ -397,6 +461,28 @@
                 }
 
                 return amount > 0 ? amount.toFixed(2) : '';
+            }
+
+            function getContractDurationInDays(contract) {
+                const startRaw = contract.contract_effectivity_date;
+                const endRaw = contract.contract_expiry_date;
+                if (!startRaw || !endRaw) return null;
+
+                const start = new Date(startRaw);
+                const end = new Date(endRaw);
+                if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
+
+                const diffMs = end.getTime() - start.getTime();
+                if (diffMs < 0) return null;
+
+                return Math.round(diffMs / (1000 * 60 * 60 * 24));
+            }
+
+            function normalizeStatus(status) {
+                if (!status) return '';
+                return String(status)
+                    .toLowerCase()
+                    .replace(/[^a-z]/g, '');
             }
 
             function debounce(fn, delay) {
