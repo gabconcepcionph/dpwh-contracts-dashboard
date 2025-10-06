@@ -138,7 +138,6 @@
             ];
 
             const dataSources = [
-                { label: 'All', file: 'all.json' },
                 { label: 'Cordillera Administrative Region (CAR)', file: 'car-2025_737.json' },
                 { label: 'Region I', file: 'region1-2025_1802.json' },
                 { label: 'Region II', file: 'region2-2025_1281.json' },
@@ -156,11 +155,15 @@
                 { label: 'Region XIII', file: 'region13-2025_782.json' },
                 { label: 'Negros Island Region', file: 'negros-2025_913.json' },
                 { label: 'National Capital Region', file: 'ncr-2025_1742.json' },
-                { label: 'NCR (Alt Copy)', file: 'ncr_1742.json' }
+                //{ label: 'NCR (Alt Copy)', file: 'ncr_1742.json' },
+                { label: 'All', file: 'all.json' },
             ];
 
             let allContracts = [];
             let activeSource = null;
+
+            const CACHE_PREFIX = 'dpwh-dataset:';
+            const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
             initDatasets();
             initMonthSelectors();
@@ -213,6 +216,14 @@
                     '<tr><td colspan="8" class="px-3 py-6 text-center text-slate-400">Loading data…</td></tr>'
                 );
 
+                if (!forceReload) {
+                    const cached = readCache(source.file);
+                    if (cached) {
+                        processDataset(cached);
+                        return;
+                    }
+                }
+
                 fetch(source.file + (forceReload ? `?t=${Date.now()}` : ''))
                     .then(response => {
                         if (!response.ok) {
@@ -221,12 +232,8 @@
                         return response.json();
                     })
                     .then(data => {
-                        if (!Array.isArray(data)) {
-                            throw new Error('Invalid JSON format: expected an array of contracts.');
-                        }
-                        allContracts = data;
-                        populateStatusOptions();
-                        applyFilters();
+                        saveCache(source.file, data);
+                        processDataset(data);
                     })
                     .catch(error => {
                         console.error(error);
@@ -236,6 +243,46 @@
                         $('#results-count').text('0 results');
                         updateSummary([]);
                     });
+            }
+            function processDataset(data) {
+                if (!Array.isArray(data)) {
+                    throw new Error('Invalid JSON format: expected an array of contracts.');
+                }
+                allContracts = data;
+                populateStatusOptions();
+                applyFilters();
+            }
+
+            function getCacheKey(file) {
+                return `${CACHE_PREFIX}${file}`;
+            }
+
+            function readCache(file) {
+                try {
+                    const raw = window.localStorage.getItem(getCacheKey(file));
+                    if (!raw) return null;
+                    const { expiresAt, data } = JSON.parse(raw);
+                    if (typeof expiresAt !== 'number' || Date.now() > expiresAt) {
+                        window.localStorage.removeItem(getCacheKey(file));
+                        return null;
+                    }
+                    return data;
+                } catch (error) {
+                    console.warn('Failed to read cached dataset', error);
+                    return null;
+                }
+            }
+
+            function saveCache(file, data) {
+                try {
+                    const payload = {
+                        expiresAt: Date.now() + ONE_YEAR_MS,
+                        data
+                    };
+                    window.localStorage.setItem(getCacheKey(file), JSON.stringify(payload));
+                } catch (error) {
+                    console.warn('Failed to save dataset cache', error);
+                }
             }
 
             function populateStatusOptions() {
