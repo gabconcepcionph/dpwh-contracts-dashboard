@@ -181,13 +181,6 @@
 
             function initMonthSelectors() {
                 const $effectivity = $('#filter-effectivity-month');
-                const $expiry = $('#filter-expiry-month');
-                [$effectivity, $expiry].forEach($select => {
-                    $select.append('<option value="">All Months</option>');
-                    monthNames.forEach((name, idx) => {
-                        $select.append(`<option value="${idx}">${name}</option>`);
-                    });
-                });
             }
 
             function bindEvents() {
