@@ -104,7 +104,9 @@
             <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
                 <p class="text-sm text-slate-400">Shortest Effectivity → Expiry</p>
                 <p id="summary-shortest-term" class="text-2xl font-semibold mt-1">—</p>
-                <p id="summary-shortest-term-details" class="text-xs text-slate-400 mt-2">No contract data</p>
+                <ol id="summary-shortest-term-list" class="mt-3 space-y-1 text-xs text-slate-300 list-decimal list-inside">
+                    <li class="text-slate-500">No contract data</li>
+                </ol>
             </div>
             <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
                 <p class="text-sm text-slate-400">Contractor Ranking (by projects)</p>
@@ -396,25 +398,30 @@
                 const averageCost = totalProjects ? totalCost / totalProjects : 0;
                 $('#summary-avg-cost').text(`₱${formatCurrency(averageCost)}`);
 
-                const shortestTermResult = contracts.reduce((best, contract) => {
+                const shortestTermResults = contracts.reduce((list, contract) => {
                     const duration = getContractDurationInDays(contract);
-                    if (duration === null) return best;
-                    if (!best || duration < best.duration) {
-                        return { duration, contract };
-                    }
-                    return best;
-                }, null);
-                const shortestTermText = !shortestTermResult
+                    if (duration === null) return list;
+                    list.push({ duration, contract });
+                    return list;
+                }, [])
+                    .sort((a, b) => a.duration - b.duration)
+                    .slice(0, 10);
+
+                const shortestTermText = shortestTermResults.length === 0
                     ? '—'
-                    : `${shortestTermResult.duration.toLocaleString()} day${shortestTermResult.duration === 1 ? '' : 's'}`;
+                    : `${shortestTermResults[0].duration.toLocaleString()} day${shortestTermResults[0].duration === 1 ? '' : 's'}`;
                 $('#summary-shortest-term').text(shortestTermText);
-                const $shortestDetails = $('#summary-shortest-term-details');
-                if (!shortestTermResult) {
-                    $shortestDetails.text('No contract data');
+
+                const $shortestList = $('#summary-shortest-term-list');
+                $shortestList.empty();
+                if (shortestTermResults.length === 0) {
+                    $shortestList.append('<li class="text-slate-500">No contract data</li>');
                 } else {
-                    const { contract } = shortestTermResult;
-                    const contractId = contract.contract_id || '—';
-                    $shortestDetails.text(`${contractId}`);
+                    shortestTermResults.forEach(({ duration, contract }, index) => {
+                        const contractId = contract.contract_id || '—';
+                        const itemText = `${contractId} (${duration.toLocaleString()} day${duration === 1 ? '' : 's'})`;
+                        $shortestList.append(`<li>${itemText}</li>`);
+                    });
                 }
 
                 const contractorCounts = new Map();
