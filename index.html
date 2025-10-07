@@ -612,7 +612,7 @@
 
                         const $button = $('<button>', {
                             type: 'button',
-                            class: 'text-left px-2 py-1 rounded-md transition hover:bg-brand/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60',
+                            class: 'text-left px-2 py-1 underline rounded-md transition hover:bg-brand/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60',
                             'data-contract-id': contractId
                         }).text(itemText);
 
@@ -645,7 +645,7 @@
                     sortedContractors.forEach(([name, count]) => {
                         const $button = $('<button>', {
                             type: 'button',
-                            class: 'text-left px-2 py-1 rounded-md transition hover:bg-brand/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60',
+                            class: 'text-left px-2 py-1 underline rounded-md transition hover:bg-brand/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60',
                             'data-contractor-name': name
                         });
 
@@ -659,7 +659,7 @@
                             $button.addClass('bg-brand/30 text-brand');
                         }
 
-                        const $listItem = $('<li>').append($button);
+                        const $listItem = $('<li>', { class: 'cursor-pointer ' }).append($button);
                         $contractorList.append($listItem);
                     });
                 }
