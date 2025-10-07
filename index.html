@@ -288,6 +288,16 @@
         </tr>
     </template>
 
+    <div id="billion-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4 py-6" aria-hidden="true">
+        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" data-modal-close="billion"></div>
+        <div class="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-xl shadow-black/40" role="dialog" aria-modal="true" aria-labelledby="billion-modal-title">
+            <button type="button" class="absolute right-4 top-4 text-slate-400 hover:text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60" data-modal-close="billion" aria-label="Close dialog">
+                <span class="text-2xl leading-none">&times;</span>
+            </button>
+            <div id="billion-modal-content" class="space-y-4 text-sm text-slate-200"></div>
+        </div>
+    </div>
+
     <script>
         $(function () {
             const monthNames = [
@@ -323,6 +333,7 @@
             let activeContractorFilter = null;
             let activeFloodFilter = false;
             let lastFloodTotalPhp = 0;
+            let isBillionModalOpen = false;
             const INVESTMENT_EQUIVALENTS = {
                 elementary_schools: 333,
                 colleges: 13,
@@ -417,7 +428,23 @@
 
                 $('#summary-billion-info').on('click', function (event) {
                     event.preventDefault();
-                    showBillionTooltip(this);
+                    openBillionModal();
+                });
+
+                $(document).on('keydown', function (event) {
+                    if (event.key === 'Escape') {
+                        closeBillionModal();
+                    }
+                });
+
+                $(document).on('click', '[data-modal-close="billion"]', function () {
+                    closeBillionModal();
+                });
+
+                $('#billion-modal').on('click', function (event) {
+                    if (event.target === this) {
+                        closeBillionModal();
+                    }
                 });
             }
 
@@ -593,12 +620,7 @@
                 $value.toggleClass('text-brand', activeFloodFilter);
             }
 
-            function showBillionTooltip(target) {
-                const existing = document.getElementById('billion-tooltip');
-                if (existing) {
-                    existing.remove();
-                }
-
+            function openBillionModal() {
                 const perMemberDailySpend = 100_000;
                 const familyMembers = 5;
                 const familyDailySpend = perMemberDailySpend * familyMembers;
@@ -613,16 +635,17 @@
                 const daysToFloodTotal = lastFloodTotalPhp > 0 ? Math.ceil(lastFloodTotalPhp / familyDailySpend) : 0;
                 const yearsToFloodTotal = daysToFloodTotal ? (daysToFloodTotal / 365).toFixed(1) : '0.0';
 
-                const tooltip = document.createElement('div');
-                tooltip.id = 'billion-tooltip';
-                tooltip.className = 'absolute z-50 mt-1 max-w-xs rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 shadow-lg';
+                const $modal = $('#billion-modal');
+                const $content = $('#billion-modal-content');
+                if (!$modal.length || !$content.length) return;
+
                 const investmentScale = lastFloodTotalPhp / INVESTMENT_EQUIVALENTS.budget_php;
                 const formatUnits = (base) => Math.floor(base * investmentScale).toLocaleString();
                 const foodPacksPerFamily30Days = Math.floor((INVESTMENT_EQUIVALENTS.food_packs * investmentScale) / 30);
                 const investmentList = lastFloodTotalPhp > 0
-                    ? `<div class="mt-2 text-slate-300">
-                            <p class="font-semibold text-slate-200">If invested instead:</p>
-                            <ul class="mt-1 space-y-1 list-disc list-inside">
+                    ? `<div class="mt-4 space-y-2">
+                            <h4 class="text-sm font-semibold text-slate-100">If invested instead</h4>
+                            <ul class="space-y-1 text-slate-300 list-disc list-inside">
                                 <li>Elementary schools: <strong>${formatUnits(INVESTMENT_EQUIVALENTS.elementary_schools)}</strong></li>
                                 <li>High schools: <strong>${formatUnits(INVESTMENT_EQUIVALENTS.high_schools)}</strong></li>
                                 <li>Colleges: <strong>${formatUnits(INVESTMENT_EQUIVALENTS.colleges)}</strong></li>
@@ -632,46 +655,46 @@
                                 <li>Families supported for 30 days (food packs): <strong>${foodPacksPerFamily30Days.toLocaleString()}</strong></li>
                             </ul>
                        </div>`
-                    : '';
+                    : '<p class="text-slate-300">Investment equivalents will appear once flood control totals are available.</p>';
 
-                tooltip.innerHTML = `Flood control total: <strong>${totalFormatted}</strong><br>` +
-                    `≈ <strong>${billionsFormatted} ${billionsLabel}</strong><br>` +
-                    `A family of 5, with each member spending ₱100k daily (₱${familyDailySpend.toLocaleString()} total), reaches ₱1B in <strong>${daysToBillion.toLocaleString()} days</strong> (~${yearsApprox} years)<br>` +
-                    (lastFloodTotalPhp > 0
-                        ? `Matching this total would require a family of 5, each spending ₱100k/day (₱${familyDailySpend.toLocaleString()} total) for <strong>${daysToFloodTotal.toLocaleString()} days</strong> (~${yearsToFloodTotal} years).`
-                        : '') +
-                    investmentList;
+                const spendingComparison = lastFloodTotalPhp > 0
+                    ? `<p class="text-slate-300">Matching this total would require a family of five—each spending ₱100,000 daily (₱${familyDailySpend.toLocaleString()} total)—for <strong>${daysToFloodTotal.toLocaleString()} days</strong> (~${yearsToFloodTotal} years).</p>`
+                    : '<p class="text-slate-300">Once data loads, you will see how long it would take a family of five spending ₱100,000 each day to match this amount.</p>';
 
-                document.body.appendChild(tooltip);
+                $content.html(`
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <h3 id="billion-modal-title" class="text-lg font-semibold text-brand">Flood Control Financial Context</h3>
+                            <p class="text-slate-300">Current flood control total: <strong>${totalFormatted}</strong> (≈ <strong>${billionsFormatted} ${billionsLabel}</strong>).</p>
+                            <p class="text-slate-300">A family of five, with each member spending ₱100,000 daily (₱${familyDailySpend.toLocaleString()} total), would reach ₱1 billion in <strong>${daysToBillion.toLocaleString()} days</strong> (~${yearsApprox} years).</p>
+                            ${spendingComparison}
+                        </div>
+                        ${investmentList}
+                    </div>
+                `);
 
-                const rect = target.getBoundingClientRect();
-                const tooltipRect = tooltip.getBoundingClientRect();
-                const top = window.scrollY + rect.top - tooltipRect.height - 8;
-                const left = window.scrollX + rect.left + (rect.width / 2) - (tooltipRect.width / 2);
-                tooltip.style.top = `${Math.max(top, 8)}px`;
-                tooltip.style.left = `${Math.max(left, 8)}px`;
+                $modal.removeClass('hidden').attr('aria-hidden', 'false');
+                $('body').addClass('overflow-hidden');
+                isBillionModalOpen = true;
 
-                const removeHandler = (event) => {
-                    if (event.target === target || tooltip.contains(event.target)) {
-                        return;
-                    }
-                    tooltip.remove();
-                    document.removeEventListener('click', removeHandler);
-                    document.removeEventListener('keydown', escHandler);
-                };
+                const $closeButton = $modal.find('[data-modal-close="billion"]').first();
+                if ($closeButton.length) {
+                    $closeButton.focus();
+                }
+            }
 
-                const escHandler = (event) => {
-                    if (event.key === 'Escape') {
-                        tooltip.remove();
-                        document.removeEventListener('click', removeHandler);
-                        document.removeEventListener('keydown', escHandler);
-                    }
-                };
-
-                setTimeout(() => {
-                    document.addEventListener('click', removeHandler);
-                    document.addEventListener('keydown', escHandler);
-                }, 0);
+            function closeBillionModal() {
+                if (!isBillionModalOpen) return;
+                const $modal = $('#billion-modal');
+                const $content = $('#billion-modal-content');
+                if ($modal.length) {
+                    $modal.addClass('hidden').attr('aria-hidden', 'true');
+                }
+                if ($content.length) {
+                    $content.empty();
+                }
+                $('body').removeClass('overflow-hidden');
+                isBillionModalOpen = false;
             }
 
             function renderTable(contracts) {
