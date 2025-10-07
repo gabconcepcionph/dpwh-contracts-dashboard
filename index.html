@@ -420,8 +420,8 @@
                     cells[4].textContent = contract.contract_cost_php || '—';
                     cells[5].textContent = contract.contract_effectivity_date || '—';
                     cells[6].textContent = contract.contract_expiry_date || '—';
-                    const durationInDays = getContractDurationInDays(contract);
-                    cells[7].textContent = durationInDays === null ? '—' : durationInDays.toLocaleString();
+                    const durationText = formatContractDuration(contract);
+                    cells[7].textContent = durationText === null ? '—' : durationText;
                     cells[8].textContent = contract.status || '—';
                     $tbody.append(clone);
                 });
@@ -577,6 +577,42 @@
                 if (diffMs < 0) return null;
 
                 return Math.round(diffMs / (1000 * 60 * 60 * 24));
+            }
+
+            function formatContractDuration(contract) {
+                const startRaw = contract.contract_effectivity_date;
+                const endRaw = contract.contract_expiry_date;
+                if (!startRaw || !endRaw) return null;
+
+                const start = new Date(startRaw);
+                const end = new Date(endRaw);
+                if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
+                if (end.getTime() < start.getTime()) return null;
+
+                const startUTC = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()));
+                const endUTC = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate()));
+
+                let months = (endUTC.getUTCFullYear() - startUTC.getUTCFullYear()) * 12 + (endUTC.getUTCMonth() - startUTC.getUTCMonth());
+                let anchor = new Date(Date.UTC(startUTC.getUTCFullYear(), startUTC.getUTCMonth() + months, startUTC.getUTCDate()));
+
+                if (anchor > endUTC) {
+                    months -= 1;
+                    anchor = new Date(Date.UTC(startUTC.getUTCFullYear(), startUTC.getUTCMonth() + months, startUTC.getUTCDate()));
+                }
+
+                const msPerDay = 1000 * 60 * 60 * 24;
+                let days = Math.round((endUTC.getTime() - anchor.getTime()) / msPerDay);
+                if (days < 0) days = 0;
+
+                if (months <= 0) {
+                    return `${days.toLocaleString()} day${days === 1 ? '' : 's'}`;
+                }
+
+                if (days <= 0) {
+                    return `${months.toLocaleString()} month${months === 1 ? '' : 's'}`;
+                }
+
+                return `${months.toLocaleString()} month${months === 1 ? '' : 's'} ${days.toLocaleString()} day${days === 1 ? '' : 's'}`;
             }
 
             function normalizeStatus(status) {
