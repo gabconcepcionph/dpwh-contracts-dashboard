@@ -76,49 +76,96 @@
             </div>
         </section>
 
-        <section class="grid gap-4 md:grid-cols-3 mb-8" id="summary-cards">
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
-                <p class="text-sm text-slate-400">Active Dataset</p>
-                <p id="summary-dataset" class="text-2xl font-semibold mt-1 text-brand">—</p>
+        <section class="mb-8" id="summary-cards">
+            <div class="grid gap-4 md:grid-cols-3 hidden" data-state="content">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                    <p class="text-sm text-slate-400">Active Dataset</p>
+                    <p id="summary-dataset" class="text-2xl font-semibold mt-1 text-brand">—</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                    <p class="text-sm text-slate-400">Projects</p>
+                    <p id="summary-projects" class="text-2xl font-semibold mt-1">0</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                    <p class="text-sm text-slate-400">Total Contract Cost</p>
+                    <p id="summary-amount" class="text-2xl font-semibold mt-1">₱0.00</p>
+                </div>
             </div>
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
-                <p class="text-sm text-slate-400">Projects</p>
-                <p id="summary-projects" class="text-2xl font-semibold mt-1">0</p>
-            </div>
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
-                <p class="text-sm text-slate-400">Total Contract Cost</p>
-                <p id="summary-amount" class="text-2xl font-semibold mt-1">₱0.00</p>
+            <div class="grid gap-4 md:grid-cols-3 animate-pulse" data-state="skeleton">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                    <div class="h-3.5 w-24 bg-slate-800/80 rounded"></div>
+                    <div class="h-8 w-32 bg-slate-800/70 rounded mt-4"></div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                    <div class="h-3.5 w-20 bg-slate-800/80 rounded"></div>
+                    <div class="h-8 w-20 bg-slate-800/70 rounded mt-4"></div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                    <div class="h-3.5 w-32 bg-slate-800/80 rounded"></div>
+                    <div class="h-8 w-36 bg-slate-800/70 rounded mt-4"></div>
+                </div>
             </div>
         </section>
 
-        <section class="grid gap-4 md:grid-cols-5 mb-8" id="extended-summary-cards">
-            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
-                <p class="text-sm text-slate-400">Ongoing Projects</p>
-                <p id="summary-ongoing" class="text-2xl font-semibold mt-1">0</p>
-                <p class="text-sm text-slate-400">Completed Projects</p>
-                <p id="summary-completed" class="text-2xl font-semibold mt-1">0</p>
-                <p class="text-sm text-slate-400">Average Contract Cost</p>
-                <p id="summary-avg-cost" class="text-2xl font-semibold mt-1">₱0.00</p>
+        <section class="mb-8" id="extended-summary-cards">
+            <div class="grid gap-4 md:grid-cols-5 hidden" data-state="content">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                    <p class="text-sm text-slate-400">Ongoing Projects</p>
+                    <p id="summary-ongoing" class="text-2xl font-semibold mt-1">0</p>
+                    <p class="text-sm text-slate-400">Completed Projects</p>
+                    <p id="summary-completed" class="text-2xl font-semibold mt-1">0</p>
+                    <p class="text-sm text-slate-400">Average Contract Cost</p>
+                    <p id="summary-avg-cost" class="text-2xl font-semibold mt-1">₱0.00</p>
+                </div>
+                <div class="bg-slate-900 h-64 overflow-y-auto col-span-3 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                    <p class="text-sm text-slate-400">Contractor Ranking (by projects)</p>
+                    <ol id="summary-contractors" class="mt-2 space-y-1 list-decimal list-inside text-sm text-slate-300">
+                        <li class="text-slate-500">No data</li>
+                    </ol>
+                </div>
+                <div class="bg-slate-900 h-64 overflow-y-auto border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
+                    <p class="text-sm text-slate-400">Shortest Effectivity → Expiry</p>
+                    <p id="summary-shortest-term" class="text-2xl font-semibold mt-1">—</p>
+                    <ol id="summary-shortest-term-list" class="mt-3 space-y-1 text-xs text-slate-300 list-decimal list-inside">
+                        <li class="text-slate-500">No contract data</li>
+                    </ol>
+                </div>
             </div>
-            <div class="bg-slate-900 h-64 overflow-y-auto col-span-3 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
-                <p class="text-sm text-slate-400">Contractor Ranking (by projects)</p>
-                <ol id="summary-contractors" class="mt-2 space-y-1 list-decimal list-inside text-sm text-slate-300">
-                    <li class="text-slate-500">No data</li>
-                </ol>
-            </div>
-            <div class="bg-slate-900 h-64 overflow-y-auto border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
-                <p class="text-sm text-slate-400">Shortest Effectivity → Expiry</p>
-                <p id="summary-shortest-term" class="text-2xl font-semibold mt-1">—</p>
-                <ol id="summary-shortest-term-list" class="mt-3 space-y-1 text-xs text-slate-300 list-decimal list-inside">
-                    <li class="text-slate-500">No contract data</li>
-                </ol>
+            <div class="grid gap-4 md:grid-cols-5 animate-pulse" data-state="skeleton">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20 space-y-4">
+                    <div class="h-3.5 w-28 bg-slate-800/80 rounded"></div>
+                    <div class="h-8 w-20 bg-slate-800/70 rounded"></div>
+                    <div class="h-3.5 w-32 bg-slate-800/80 rounded"></div>
+                    <div class="h-8 w-24 bg-slate-800/70 rounded"></div>
+                    <div class="h-3.5 w-40 bg-slate-800/80 rounded"></div>
+                    <div class="h-8 w-28 bg-slate-800/70 rounded"></div>
+                </div>
+                <div class="bg-slate-900 h-64 overflow-hidden col-span-3 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20 space-y-3">
+                    <div class="h-3.5 w-44 bg-slate-800/80 rounded"></div>
+                    <div class="space-y-2">
+                        <div class="h-3 w-full bg-slate-800/70 rounded"></div>
+                        <div class="h-3 w-11/12 bg-slate-800/70 rounded"></div>
+                        <div class="h-3 w-5/6 bg-slate-800/70 rounded"></div>
+                        <div class="h-3 w-4/5 bg-slate-800/70 rounded"></div>
+                        <div class="h-3 w-3/4 bg-slate-800/70 rounded"></div>
+                    </div>
+                </div>
+                <div class="bg-slate-900 h-64 overflow-hidden border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20 space-y-4">
+                    <div class="h-3.5 w-48 bg-slate-800/80 rounded"></div>
+                    <div class="h-7 w-32 bg-slate-800/70 rounded"></div>
+                    <div class="space-y-2">
+                        <div class="h-3 w-11/12 bg-slate-800/70 rounded"></div>
+                        <div class="h-3 w-4/5 bg-slate-800/70 rounded"></div>
+                        <div class="h-3 w-2/3 bg-slate-800/70 rounded"></div>
+                    </div>
+                </div>
             </div>
         </section>
 
         <section class="bg-slate-900 border border-slate-800 rounded-lg p-6 shadow-lg shadow-black/20">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-semibold">Contracts</h2>
-                <span id="results-count" class="text-sm text-slate-400">0 results</span>
+                <span id="results-count" class="text-sm text-slate-400">Loading…</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
@@ -136,8 +183,38 @@
                         </tr>
                     </thead>
                     <tbody id="contracts-body" class="divide-y divide-slate-800">
-                        <tr>
-                            <td colspan="8" class="px-3 py-6 text-center text-slate-400">Load a dataset to view records.</td>
+                        <tr class="animate-pulse">
+                            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/70 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-48 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-40 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-44 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-28 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-20 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-20 bg-slate-800/60 rounded"></div></td>
+                        </tr>
+                        <tr class="animate-pulse">
+                            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/70 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-56 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-36 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-40 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-20 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-20 bg-slate-800/60 rounded"></div></td>
+                        </tr>
+                        <tr class="animate-pulse">
+                            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/70 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-52 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-44 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-36 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-28 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-20 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/60 rounded"></div></td>
+                            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/60 rounded"></div></td>
                         </tr>
                     </tbody>
                 </table>
@@ -156,6 +233,42 @@
             <td class="px-3 py-2 text-slate-200"></td>
             <td class="px-3 py-2 text-slate-200"></td>
             <td class="px-3 py-2 text-slate-200"></td>
+        </tr>
+    </template>
+
+    <template id="table-skeleton-template">
+        <tr class="animate-pulse">
+            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/70 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-48 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-40 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-44 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-28 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-20 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-20 bg-slate-800/60 rounded"></div></td>
+        </tr>
+        <tr class="animate-pulse">
+            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/70 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-56 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-36 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-40 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-20 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-20 bg-slate-800/60 rounded"></div></td>
+        </tr>
+        <tr class="animate-pulse">
+            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/70 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-52 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-44 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-36 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-28 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-20 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/60 rounded"></div></td>
+            <td class="px-3 py-3"><div class="h-3.5 w-24 bg-slate-800/60 rounded"></div></td>
         </tr>
     </template>
 
@@ -273,11 +386,10 @@
                 activeSource = source;
                 activeContractIdFilter = null;
                 activeContractorFilter = null;
+                setSummaryLoading(true);
+                showTableSkeleton();
                 $('#summary-dataset').text(source.label);
                 $('#results-count').text('Loading…');
-                $('#contracts-body').html(
-                    '<tr><td colspan="8" class="px-3 py-6 text-center text-slate-400">Loading data…</td></tr>'
-                );
 
                 if (!forceReload) {
                     const cached = readCache(source.file);
@@ -305,7 +417,28 @@
                         );
                         $('#results-count').text('0 results');
                         updateSummary([]);
+                        setSummaryLoading(false);
                     });
+            }
+
+            function setSummaryLoading(isLoading) {
+                toggleSectionLoading('#summary-cards', isLoading);
+                toggleSectionLoading('#extended-summary-cards', isLoading);
+            }
+
+            function toggleSectionLoading(selector, isLoading) {
+                const $section = $(selector);
+                if (!$section.length) return;
+                $section.find('[data-state="skeleton"]').toggleClass('hidden', !isLoading);
+                $section.find('[data-state="content"]').toggleClass('hidden', isLoading);
+            }
+
+            function showTableSkeleton() {
+                const template = document.getElementById('table-skeleton-template');
+                const $tbody = $('#contracts-body');
+                if (!template || !$tbody.length) return;
+                $tbody.empty();
+                $tbody.append(template.content.cloneNode(true));
             }
             function processDataset(data) {
                 if (!Array.isArray(data)) {
@@ -314,6 +447,7 @@
                 allContracts = data;
                 populateStatusOptions();
                 applyFilters();
+                setSummaryLoading(false);
             }
 
             function getCacheKey(file) {
