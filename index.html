@@ -603,11 +603,15 @@
                         const rawContractId = contract.contract_id;
                         const contractId = rawContractId ? String(rawContractId).trim() : '';
                         const displayId = contractId || '—';
-                        const itemText = `${displayId} (${duration.toLocaleString()} day${duration === 1 ? '' : 's'})`;
+                        let itemText = `${displayId} (${duration.toLocaleString()} day${duration === 1 ? '' : 's'})`;
 
                         if (!contractId) {
                             $shortestList.append(`<li>${itemText}</li>`);
                             return;
+                        }
+
+                        if (activeContractIdFilter && contractId.toLowerCase() === activeContractIdFilter.toLowerCase()) {
+                            itemText = `${itemText} [X]`;
                         }
 
                         const $button = $('<button>', {
@@ -652,7 +656,8 @@
                         $button.append(
                             $('<span>').text(name),
                             ' ',
-                            $('<span>', { class: 'text-slate-500' }).text(`(${count.toLocaleString()})`)
+                            $('<span>', { class: 'text-slate-500' }).text(`(${count.toLocaleString()})`),
+                            (name === activeContractorFilter) ? $('<span>', { class: 'text-brand' }).text(' [X]') : ''
                         );
 
                         if (activeContractorFilter && name === activeContractorFilter) {
