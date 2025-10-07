@@ -114,8 +114,8 @@
                     <p id="summary-ongoing" class="text-2xl font-semibold mt-1">0</p>
                     <p class="text-sm text-slate-400">Completed Projects</p>
                     <p id="summary-completed" class="text-2xl font-semibold mt-1">0</p>
-                    <p class="text-sm text-slate-400">Average Contract Cost</p>
-                    <p id="summary-avg-cost" class="text-2xl font-semibold mt-1">₱0.00</p>
+                    <p class="text-sm text-slate-400 hidden">Average Contract Cost</p>
+                    <p id="summary-avg-cost" class="text-2xl hidden font-semibold mt-1">₱0.00</p>
                     <p class="text-sm text-slate-400">Flood Control Related</p>
                     <p id="summary-flood-count" class="text-2xl font-semibold mt-1">0</p>
                     <p class="text-sm text-slate-400">Flood Control Total</p>
@@ -584,7 +584,9 @@
                 $('#summary-completed').text(completedCount.toLocaleString());
 
                 const averageCost = totalProjects ? totalCost / totalProjects : 0;
-                $('#summary-avg-cost').text(`₱${formatCurrency(averageCost)}`);
+                const averageShortAmount = formatShortAmount(averageCost);
+                const averageShortSuffix = averageShortAmount ? `${averageShortAmount}` : '';
+                $('#summary-avg-cost').text(`${averageShortSuffix}`);
 
                 const floodContracts = contracts.filter(contract => {
                     const description = String(contract.contract_description || '').toLowerCase();
