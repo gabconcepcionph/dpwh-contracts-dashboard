@@ -127,8 +127,8 @@
                     <p id="summary-avg-cost" class="text-2xl hidden font-semibold mt-1">₱0.00</p>
                     <p class="text-sm text-slate-400">Flood Control Related</p>
                     <p id="summary-flood-count" class="text-2xl font-semibold mt-1">0</p>
-                    <p class="text-sm text-slate-400">Flood Control Total</p>
-                    <p id="summary-flood-total" class="text-2xl font-semibold mt-1">₱0.00</p>
+                    <p id="summary-flood-total-label" class="text-sm underline text-slate-400 cursor-pointer">Flood Control Total »</p>
+                    <p id="summary-flood-total" class="text-2xl font-semibold mt-1 cursor-pointer">₱0.00</p>
                 </div>
                 <div class="bg-slate-900 h-64 overflow-y-auto col-span-3 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
                     <p class="text-sm text-slate-400">Contractor Ranking (by projects)</p>
@@ -320,6 +320,7 @@
             let activeSource = null;
             let activeContractIdFilter = null;
             let activeContractorFilter = null;
+            let activeFloodFilter = false;
 
             const CACHE_PREFIX = 'dpwh-dataset:';
             const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
@@ -364,6 +365,8 @@
 
                 $('#filter-contractor').on('input', function () {
                     activeContractorFilter = null;
+                    activeFloodFilter = false;
+                    updateFloodFilterUI();
                     debouncedApplyFilters();
                 });
 
@@ -394,6 +397,12 @@
 
                     applyFilters();
                 });
+
+                $('#summary-flood-total, #summary-flood-total-label').on('click', function () {
+                    activeFloodFilter = !activeFloodFilter;
+                    updateFloodFilterUI();
+                    applyFilters();
+                });
             }
 
             function loadDataset(source, forceReload = false) {
@@ -401,6 +410,8 @@
                 activeSource = source;
                 activeContractIdFilter = null;
                 activeContractorFilter = null;
+                activeFloodFilter = false;
+                updateFloodFilterUI();
                 setSummaryLoading(true);
                 showTableSkeleton();
                 $('#summary-dataset').text(source.label);
@@ -529,13 +540,15 @@
                     const contractIdValue = String(contract.contract_id || '').trim();
                     const contractor = String(contract.contractor || '').toLowerCase();
                     const status = String(contract.status || '').trim();
+                    const description = String(contract.contract_description || '').toLowerCase();
                     const effectivity = parseMonth(contract.contract_effectivity_date);
                     const expiry = parseMonth(contract.contract_expiry_date);
 
                     if (contractIdFilter && contractIdValue.toLowerCase() !== contractIdFilter) return false;
                     if (contractorQuery && !contractor.includes(contractorQuery)) return false;
                     if (statusValue && status !== statusValue) return false;
-                    if (monthFilter !== null && effectivity !== monthFilter) return false;// && expiry !== monthFilter
+                    if (monthFilter !== null && effectivity !== monthFilter) return false; // && expiry !== monthFilter
+                    if (activeFloodFilter && !description.includes('flood')) return false;
 
                     return true;
                 });
@@ -549,7 +562,18 @@
                 if (activeContractorFilter) {
                     resultsLabel += ` (Contractor: ${activeContractorFilter})`;
                 }
+                if (activeFloodFilter) {
+                    resultsLabel += ' (Description contains "flood")';
+                }
                 $('#results-count').text(resultsLabel);
+            }
+
+            function updateFloodFilterUI() {
+                const $label = $('#summary-flood-total-label');
+                const $value = $('#summary-flood-total');
+                $label.toggleClass('text-brand', activeFloodFilter);
+                $label.toggleClass('text-slate-400', !activeFloodFilter);
+                $value.toggleClass('text-brand', activeFloodFilter);
             }
 
             function renderTable(contracts) {
