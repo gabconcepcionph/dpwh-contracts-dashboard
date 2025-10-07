@@ -116,6 +116,10 @@
                     <p id="summary-completed" class="text-2xl font-semibold mt-1">0</p>
                     <p class="text-sm text-slate-400">Average Contract Cost</p>
                     <p id="summary-avg-cost" class="text-2xl font-semibold mt-1">₱0.00</p>
+                    <p class="text-sm text-slate-400">Flood Control Related</p>
+                    <p id="summary-flood-count" class="text-2xl font-semibold mt-1">0</p>
+                    <p class="text-sm text-slate-400">Flood Control Total</p>
+                    <p id="summary-flood-total" class="text-2xl font-semibold mt-1">₱0.00</p>
                 </div>
                 <div class="bg-slate-900 h-64 overflow-y-auto col-span-3 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
                     <p class="text-sm text-slate-400">Contractor Ranking (by projects)</p>
@@ -139,6 +143,8 @@
                     <div class="h-8 w-24 bg-slate-800/70 rounded"></div>
                     <div class="h-3.5 w-40 bg-slate-800/80 rounded"></div>
                     <div class="h-8 w-28 bg-slate-800/70 rounded"></div>
+                    <div class="h-3.5 w-48 bg-slate-800/80 rounded"></div>
+                    <div class="h-8 w-32 bg-slate-800/70 rounded"></div>
                 </div>
                 <div class="bg-slate-900 h-64 overflow-hidden col-span-3 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20 space-y-3">
                     <div class="h-3.5 w-44 bg-slate-800/80 rounded"></div>
@@ -579,6 +585,17 @@
 
                 const averageCost = totalProjects ? totalCost / totalProjects : 0;
                 $('#summary-avg-cost').text(`₱${formatCurrency(averageCost)}`);
+
+                const floodContracts = contracts.filter(contract => {
+                    const description = String(contract.contract_description || '').toLowerCase();
+                    return description.includes('flood');
+                });
+                const floodCount = floodContracts.length;
+                const floodTotal = floodContracts.reduce((sum, contract) => sum + parseAmount(contract.contract_cost_php), 0);
+                $('#summary-flood-count').text(floodCount.toLocaleString());
+                const floodShortAmount = formatShortAmount(floodTotal);
+                const floodShortSuffix = floodShortAmount ? `${floodShortAmount}` : '';
+                $('#summary-flood-total').text(`${floodShortSuffix}`);
 
                 const shortestTermResults = contracts.reduce((list, contract) => {
                     const duration = getContractDurationInDays(contract);
