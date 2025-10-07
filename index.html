@@ -29,9 +29,12 @@
                     <p class="text-slate-400">Navigate and filter regional contract summaries generated from local JSON files.</p>
                 </div>
                 <div class="flex flex-wrap gap-3 items-center">
-                    <label class="text-sm text-slate-300" for="dataset-select">Dataset</label>
-                    <select id="dataset-select" class="bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm">
-                    </select>
+                    <div class="flex flex-col">
+                        <label class="text-sm text-slate-300" for="dataset-select">Dataset</label>
+                        <select id="dataset-select" class="bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm">
+                        </select>
+                        <p class="text-xs text-slate-500">Source: <a href="https://apps2.dpwh.gov.ph/infra_projects/default.aspx" target="_blank" rel="noopener" class="text-brand underline hover:text-brand/80">DPWH Infra Projects</a> (Date Updated : 9/30/2025)</p>
+                    </div>
                     <button id="reload-button" class="px-3 py-2 text-sm font-medium rounded-md bg-brand/20 text-brand border border-brand/40 transition hover:bg-brand/30">
                         Reload Data
                     </button>
