@@ -590,14 +590,18 @@
                     existing.remove();
                 }
 
-                const daysToBillion = Math.ceil(1_000_000_000 / 100_000);
+                const perMemberDailySpend = 100_000;
+                const familyMembers = 5;
+                const familyDailySpend = perMemberDailySpend * familyMembers;
+
+                const daysToBillion = Math.ceil(1_000_000_000 / familyDailySpend);
                 const yearsApprox = (daysToBillion / 365).toFixed(1);
 
                 const billionsValue = lastFloodTotalPhp / 1_000_000_000;
                 const billionsLabel = Math.abs(billionsValue - 1) < Number.EPSILON ? 'billion' : 'billions';
                 const billionsFormatted = billionsValue.toLocaleString(undefined, { maximumFractionDigits: 3 });
                 const totalFormatted = `₱${formatCurrency(lastFloodTotalPhp)}`;
-                const daysToFloodTotal = lastFloodTotalPhp > 0 ? Math.ceil(lastFloodTotalPhp / 100_000) : 0;
+                const daysToFloodTotal = lastFloodTotalPhp > 0 ? Math.ceil(lastFloodTotalPhp / familyDailySpend) : 0;
                 const yearsToFloodTotal = daysToFloodTotal ? (daysToFloodTotal / 365).toFixed(1) : '0.0';
 
                 const tooltip = document.createElement('div');
@@ -605,9 +609,9 @@
                 tooltip.className = 'absolute z-50 mt-1 max-w-xs rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 shadow-lg';
                 tooltip.innerHTML = `Flood control total: <strong>${totalFormatted}</strong><br>` +
                     `≈ <strong>${billionsFormatted} ${billionsLabel}</strong><br>` +
-                    `Spending ₱100k daily reaches ₱1B in <strong>${daysToBillion.toLocaleString()} days</strong> (~${yearsApprox} years)<br>` +
+                    `A family of 5, with each member spending ₱100k daily (₱${familyDailySpend.toLocaleString()} total), reaches ₱1B in <strong>${daysToBillion.toLocaleString()} days</strong> (~${yearsApprox} years)<br>` +
                     (lastFloodTotalPhp > 0
-                        ? `Reaching this total at ₱100k/day takes <strong>${daysToFloodTotal.toLocaleString()} days</strong> (~${yearsToFloodTotal} years).`
+                        ? `Matching this total would require a family of 5, each spending ₱100k/day (₱${familyDailySpend.toLocaleString()} total) for <strong>${daysToFloodTotal.toLocaleString()} days</strong> (~${yearsToFloodTotal} years).`
                         : '');
 
                 document.body.appendChild(tooltip);
