@@ -8,9 +8,11 @@
     <meta property="og:title" content="DPWH Contract Dashboard">
     <meta property="og:description" content="Navigate and filter regional contracts.">
     <meta property="og:type" content="website">
+    <meta property="og:image:alt" content="Navigate and filter regional contracts.">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="DPWH Contract Dashboard">
     <meta name="twitter:description" content="Navigate and filter regional contracts.">
+    <meta name="twitter:image:alt" content="Navigate and filter regional contracts.">
     <title>DPWH Contract Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
@@ -533,7 +535,7 @@
                     if (contractIdFilter && contractIdValue.toLowerCase() !== contractIdFilter) return false;
                     if (contractorQuery && !contractor.includes(contractorQuery)) return false;
                     if (statusValue && status !== statusValue) return false;
-                    if (monthFilter !== null && effectivity !== monthFilter && expiry !== monthFilter) return false;
+                    if (monthFilter !== null && effectivity !== monthFilter) return false;// && expiry !== monthFilter
 
                     return true;
                 });
