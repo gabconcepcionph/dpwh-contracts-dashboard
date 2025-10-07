@@ -323,6 +323,15 @@
             let activeContractorFilter = null;
             let activeFloodFilter = false;
             let lastFloodTotalPhp = 0;
+            const INVESTMENT_EQUIVALENTS = {
+                elementary_schools: 333,
+                colleges: 13,
+                high_schools: 28,
+                health_centers: 150,
+                hospitals: 2,
+                food_packs: 1_900_000,
+                budget_php: 1_000_000_000,
+            };
 
             const CACHE_PREFIX = 'dpwh-dataset:';
             const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
@@ -607,12 +616,31 @@
                 const tooltip = document.createElement('div');
                 tooltip.id = 'billion-tooltip';
                 tooltip.className = 'absolute z-50 mt-1 max-w-xs rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 shadow-lg';
+                const investmentScale = lastFloodTotalPhp / INVESTMENT_EQUIVALENTS.budget_php;
+                const formatUnits = (base) => Math.floor(base * investmentScale).toLocaleString();
+                const foodPacksPerFamily30Days = Math.floor((INVESTMENT_EQUIVALENTS.food_packs * investmentScale) / 30);
+                const investmentList = lastFloodTotalPhp > 0
+                    ? `<div class="mt-2 text-slate-300">
+                            <p class="font-semibold text-slate-200">If invested instead:</p>
+                            <ul class="mt-1 space-y-1 list-disc list-inside">
+                                <li>Elementary schools: <strong>${formatUnits(INVESTMENT_EQUIVALENTS.elementary_schools)}</strong></li>
+                                <li>High schools: <strong>${formatUnits(INVESTMENT_EQUIVALENTS.high_schools)}</strong></li>
+                                <li>Colleges: <strong>${formatUnits(INVESTMENT_EQUIVALENTS.colleges)}</strong></li>
+                                <li>Province health centers: <strong>${formatUnits(INVESTMENT_EQUIVALENTS.health_centers)}</strong></li>
+                                <li>Hospitals: <strong>${formatUnits(INVESTMENT_EQUIVALENTS.hospitals)}</strong></li>
+                                <li>Food packs/day (family in calamity): <strong>${formatUnits(INVESTMENT_EQUIVALENTS.food_packs)}</strong></li>
+                                <li>Families supported for 30 days (food packs): <strong>${foodPacksPerFamily30Days.toLocaleString()}</strong></li>
+                            </ul>
+                       </div>`
+                    : '';
+
                 tooltip.innerHTML = `Flood control total: <strong>${totalFormatted}</strong><br>` +
                     `≈ <strong>${billionsFormatted} ${billionsLabel}</strong><br>` +
                     `A family of 5, with each member spending ₱100k daily (₱${familyDailySpend.toLocaleString()} total), reaches ₱1B in <strong>${daysToBillion.toLocaleString()} days</strong> (~${yearsApprox} years)<br>` +
                     (lastFloodTotalPhp > 0
                         ? `Matching this total would require a family of 5, each spending ₱100k/day (₱${familyDailySpend.toLocaleString()} total) for <strong>${daysToFloodTotal.toLocaleString()} days</strong> (~${yearsToFloodTotal} years).`
-                        : '');
+                        : '') +
+                    investmentList;
 
                 document.body.appendChild(tooltip);
 
