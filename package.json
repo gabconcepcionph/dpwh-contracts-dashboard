@@ -1,0 +1,12 @@
+{
+  "name": "dpwh-contract-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static DPWH contract dashboard bundled for GitHub Pages deployment.",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && mkdir -p dist && cp index.html dist/index.html && cp *.json dist/"
+  },
+  "author": "",
+  "license": "UNLICENSED"
+}
