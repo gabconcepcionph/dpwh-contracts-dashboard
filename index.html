@@ -129,7 +129,7 @@
                     <p id="summary-flood-count" class="text-2xl font-semibold mt-1">0</p>
                     <p id="summary-flood-total-label" class="text-sm underline text-slate-400 cursor-pointer">Flood Control Total »</p>
                     <p id="summary-flood-total" class="text-2xl font-semibold mt-1 cursor-pointer">₱0.00</p>
-                    <p class="text-xs italic text-slate-400 underline cursor-pointer">How much is a billion?</p>
+                    <p id="summary-billion-info" class="text-xs italic text-slate-400 underline cursor-pointer">How much is a billion?</p>
                 </div>
                 <div class="bg-slate-900 h-64 overflow-y-auto col-span-3 border border-slate-800 rounded-xl p-6 shadow-lg shadow-black/20">
                     <p class="text-sm text-slate-400">Contractor Ranking (by projects)</p>
@@ -404,6 +404,11 @@
                     updateFloodFilterUI();
                     applyFilters();
                 });
+
+                $('#summary-billion-info').on('click', function (event) {
+                    event.preventDefault();
+                    showBillionTooltip(this);
+                });
             }
 
             function loadDataset(source, forceReload = false) {
@@ -575,6 +580,52 @@
                 $label.toggleClass('text-brand', activeFloodFilter);
                 $label.toggleClass('text-slate-400', !activeFloodFilter);
                 $value.toggleClass('text-brand', activeFloodFilter);
+            }
+
+            function showBillionTooltip(target) {
+                const existing = document.getElementById('billion-tooltip');
+                if (existing) {
+                    existing.remove();
+                }
+
+                const daysToBillion = Math.ceil(1_000_000_000 / 100_000);
+                const yearsApprox = (daysToBillion / 365).toFixed(1);
+
+                const tooltip = document.createElement('div');
+                tooltip.id = 'billion-tooltip';
+                tooltip.className = 'absolute z-50 mt-1 max-w-xs rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 shadow-lg';
+                tooltip.innerHTML = `Spending ₱100k daily reaches ₱1B in <strong>${daysToBillion.toLocaleString()} days</strong> (~${yearsApprox} years).`;
+
+                document.body.appendChild(tooltip);
+
+                const rect = target.getBoundingClientRect();
+                const tooltipRect = tooltip.getBoundingClientRect();
+                const top = window.scrollY + rect.top - tooltipRect.height - 8;
+                const left = window.scrollX + rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+                tooltip.style.top = `${Math.max(top, 8)}px`;
+                tooltip.style.left = `${Math.max(left, 8)}px`;
+
+                const removeHandler = (event) => {
+                    if (event.target === target || tooltip.contains(event.target)) {
+                        return;
+                    }
+                    tooltip.remove();
+                    document.removeEventListener('click', removeHandler);
+                    document.removeEventListener('keydown', escHandler);
+                };
+
+                const escHandler = (event) => {
+                    if (event.key === 'Escape') {
+                        tooltip.remove();
+                        document.removeEventListener('click', removeHandler);
+                        document.removeEventListener('keydown', escHandler);
+                    }
+                };
+
+                setTimeout(() => {
+                    document.addEventListener('click', removeHandler);
+                    document.addEventListener('keydown', escHandler);
+                }, 0);
             }
 
             function renderTable(contracts) {
